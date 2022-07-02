@@ -65,6 +65,7 @@ using namespace ppl::common;
 #include "ppl/nn/engines/x86/optimizer/ops/onnx/non_zero_op.h"
 #include "ppl/nn/engines/x86/optimizer/ops/onnx/not_op.h"
 #include "ppl/nn/engines/x86/optimizer/ops/onnx/roialign_op.h"
+#include "ppl/nn/engines/x86/optimizer/ops/onnx/one_hot_op.h"// add one hot
 #include "ppl/nn/engines/x86/optimizer/ops/onnx/pad_op.h"
 #include "ppl/nn/engines/x86/optimizer/ops/onnx/pow_op.h"
 #include "ppl/nn/engines/x86/optimizer/ops/onnx/prelu_op.h"
