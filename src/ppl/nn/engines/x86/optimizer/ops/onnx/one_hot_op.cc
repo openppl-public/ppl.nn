@@ -17,26 +17,12 @@
 
 #include "ppl/nn/engines/x86/optimizer/ops/onnx/one_hot_op.h"
 #include "ppl/nn/engines/x86/kernels/onnx/one_hot_kernel.h"
+#include "ppl/nn/oputils/onnx/reshape_one_hot.h"
 #include "ppl/nn/common/logger.h"
 using namespace std;
 using namespace ppl::common;
 
 namespace ppl { namespace nn { namespace x86 {
-
-static ppl::common::RetCode OneHotInferDims(InputOutputInfo* info) {
-    auto& in_shape0 = *info->GetInput<TensorImpl>(0)->GetShape();
-    auto& out_shape = *info->GetOutput<TensorImpl>(0)->GetShape();
-    // TODO. 
-    // for (uint32_t i = 0; i < info->GetOutputCount(); ++i) {
-    //     auto& out_shape = *info->GetOutput<TensorImpl>(i)->GetShape();
-    //     if (in_shape0.IsScalar()) {
-    //         out_shape.ReshapeAsScalar();
-    //     } else {
-    //         out_shape.Reshape(in_shape0.GetDims(), in_shape0.GetDimCount());
-    //     }
-    // }
-    return ppl::common::RC_SUCCESS;
-}
 
 RetCode OneHotOp::Init(const OptKernelOptions& options) {
     auto status = GenericLoadParam(options, &param_);
@@ -45,7 +31,9 @@ RetCode OneHotOp::Init(const OptKernelOptions& options) {
         return status;
     }
 
-    infer_dims_func_ = OneHotInferDims;
+    infer_dims_func_ = [this](InputOutputInfo* info) -> RetCode {
+        return onnx::ReshapeOneHot(info, param_.get());
+    };
     infer_type_func_ = GenericInferType;
 
     return RC_SUCCESS;

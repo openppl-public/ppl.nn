@@ -24,6 +24,24 @@ ppl::common::RetCode OneHotKernel::DoExecute(KernelExecContext* ctx) {
     return ppl::common::RC_UNSUPPORTED;
 }
 bool OneHotKernel::CanDoExecute(const KernelExecContext& ctx) const {
+    auto indices_tensor = ctx.GetInput<TensorImpl>(0);
+    auto depth_tensor = ctx.GetInput<TensorImpl>(1);
+    auto value_tensor = ctx.GetInput<TensorImpl>(2);
+    if(!indices_tensor || !value_tensor || !depth_tensor) return false;
+    // value = [off_value, on_value]
+    if(value_tensor->GetShape()->GetElementsExcludingPadding() != 2)
+        return false;
+    // indices in [-depth, depth-1]
+    // auto indices_ptr = indices_tensor->GetBufferPtr<int64_t>();
+    // auto depth = depth_tensor->GetBufferPtr<int64_t>()[0];
+    // uint64_t indices_size = indices_tensor->GetShape()->GetElementsExcludingPadding();
+    // for(uint64_t i=0; i<indices_size; i++){
+    //     if(indices_ptr[i] < -depth || indices_ptr[i] > depth-1){
+    //         return false;
+    //     }
+    //     indices_ptr[i] = indices_ptr[i] >= 0 ? 
+    //                     indices_ptr[i] : indices_ptr[i] + depth;
+    // }
     return true;
 }
 
