@@ -15,21 +15,10 @@
 // specific language governing permissions and limitations
 // under the License.
 
-#ifndef __ST_PPL_KERNEL_X86_INT64_ONE_HOT_H_
-#define __ST_PPL_KERNEL_X86_INT64_ONE_HOT_H_
-
-#include "ppl/kernel/x86/common/general_include.h"
+#include "ppl/kernel/x86/common/one_hot/one_hot_common.h"
 
 namespace ppl { namespace kernel { namespace x86 {
 
-ppl::common::RetCode one_hot_ndarray_int64(
-    const int64_t *indices,
-    const ppl::nn::TensorShape *indices_shape,
-    int64_t *dst,
-    const int64_t on_value,
-    const int64_t off_value,
-    const int64_t depth,
-    const int32_t axis);
 
 ppl::common::RetCode one_hot_ndarray_fp32(
     const int64_t *indices,
@@ -39,8 +28,11 @@ ppl::common::RetCode one_hot_ndarray_fp32(
     const float off_value,
     const int64_t depth,
     const int32_t axis
-    );
+    )
+{
+    return one_hot_ndarray_common<float>(indices, indices_shape, dst, on_value,
+                            off_value, depth, axis);
+}
+
 
 }}}; // namespace ppl::kernel::x86
-
-#endif

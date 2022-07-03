@@ -26,12 +26,14 @@ namespace ppl { namespace kernel { namespace x86 {
 
 
 template <typename eT>
-static ppl::common::RetCode one_hot_ndarray(
-    const ppl::nn::TensorShape *src_shape,
-    const ppl::nn::TensorShape *dst_shape,
-    const eT *src,
-    const int64_t *repeats,
-    eT *dst)
+static ppl::common::RetCode one_hot_ndarray_common(
+    const int64_t *indices,
+    const ppl::nn::TensorShape *indices_shape,
+    eT *dst,
+    const eT on_value,
+    const eT off_value,
+    const int64_t depth,
+    const int32_t axis)
 {
     return ppl::common::RC_UNSUPPORTED; 
 }

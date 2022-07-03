@@ -20,13 +20,17 @@
 namespace ppl { namespace kernel { namespace x86 {
 
 ppl::common::RetCode one_hot_ndarray_int64(
-    const ppl::nn::TensorShape *src_shape,
-    const ppl::nn::TensorShape *dst_shape,
-    const int64_t *src,
-    const int64_t *repeats,
-    int64_t *dst)
+    const int64_t *indices,
+    const ppl::nn::TensorShape *indices_shape,
+    int64_t *dst,
+    const int64_t on_value,
+    const int64_t off_value,
+    const int64_t depth,
+    const int32_t axis
+    )
 {
-    return one_hot_ndarray<int64_t>(src_shape, dst_shape, src, repeats, dst);
+    return one_hot_ndarray_common<int64_t>(indices, indices_shape, dst, on_value,
+                            off_value, depth, axis);
 }
 
 }}}; // namespace ppl::kernel::x86
