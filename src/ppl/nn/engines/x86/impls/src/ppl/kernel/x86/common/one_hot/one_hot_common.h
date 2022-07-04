@@ -21,7 +21,8 @@
 #include <string.h> // for memcpy
 
 #include "ppl/kernel/x86/common/internal_include.h"
-
+#include "ppl/kernel/x86/common/transpose/transpose_common.h"
+#include <algorithm>
 namespace ppl { namespace kernel { namespace x86 {
 
 
@@ -35,7 +36,30 @@ static ppl::common::RetCode one_hot_ndarray_common(
     const int64_t depth,
     const int32_t axis)
 {
-    return ppl::common::RC_UNSUPPORTED; 
+    const auto indices_size =  indices_shape->GetElementsExcludingPadding();
+    const auto dst_size = indices_size * depth;
+    std::fill(dst, dst + dst_size, off_value);
+    eT* dst_ptr = dst;
+    // indices = [2,3]
+    // depth = 4
+    // dst = [2,3,4]
+
+    // parallel optimize
+    for(uint64_t i=0; i<indices_size; i++){
+        dst_ptr[i] = on_value;
+        dst_ptr += depth;
+    }
+
+    // axis = 1
+    // transpose dst = [2,4,3]
+    // TODO: compute dst_shape_tmp[2,3,4], dst_shape[2,4,3]
+    // perm = [0,1,...,r-1], swap(r-1, axis)
+    const ppl::nn::TensorShape *dst_shape_tmp = indices_shape;
+    const ppl::nn::TensorShape *dst_shape = indices_shape;
+    // int32_t* perm;
+    std::vector<int32_t> perm;
+    return transpose_ndarray<eT>(dst_shape_tmp, dst_shape, perm.data(), dst, dst);
+    // return ppl::common::RC_UNSUPPORTED; 
 }
 
 }}}; // namespace ppl::kernel::x86

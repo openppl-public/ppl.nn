@@ -17,7 +17,7 @@
 
 #include "ppl/nn/engines/x86/kernels/onnx/one_hot_kernel.h"
 #include "ppl/kernel/x86/int64/one_hot.h"
-
+#include "ppl/kernel/x86/fp32/one_hot.h"
 namespace ppl { namespace nn { namespace x86 {
 
 ppl::common::RetCode OneHotKernel::DoExecute(KernelExecContext* ctx) {
@@ -35,8 +35,7 @@ ppl::common::RetCode OneHotKernel::DoExecute(KernelExecContext* ctx) {
     PPL_X86_TENSOR_PRINT_DEBUG_MSG(value_tensor);
 
     PPLNN_X86_DEBUG_TRACE("axis: %d\n", param_->axis);
-    const auto isa = GetISA();
-    PPLNN_X86_DEBUG_TRACE("isa: %u\n", isa);
+    PPLNN_X86_DEBUG_TRACE("isa: %u\n", GetISA());
 
     PPLNN_X86_DEBUG_TRACE("Output [y]:\n");
     PPL_X86_TENSOR_PRINT_DEBUG_MSG(y);
