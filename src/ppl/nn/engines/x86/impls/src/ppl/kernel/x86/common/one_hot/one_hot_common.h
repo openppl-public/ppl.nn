@@ -19,9 +19,8 @@
 #define __ST_PPL_KERNEL_X86_COMMON_ONE_HOT_ONE_HOT_COMMON_H_
 
 #include <string.h> // for memcpy
-
 #include "ppl/kernel/x86/common/internal_include.h"
-#include "ppl/kernel/x86/common/transpose/transpose_common.h"
+// #include "ppl/kernel/x86/common/transpose/transpose_common.h"
 #include <algorithm>
 namespace ppl { namespace kernel { namespace x86 {
 
@@ -36,32 +35,30 @@ static ppl::common::RetCode one_hot_ndarray_common(
     const int64_t depth,
     const int32_t axis)
 {
-    const auto indices_size =  indices_shape->GetElementsExcludingPadding();
-    const auto dst_size = indices_size * depth;
-    std::fill(dst, dst + dst_size, off_value);
-    eT* dst_ptr = dst;
-    // indices = [2,3]
-    // depth = 4
-    // dst = [2,3,4]
+    uint32_t indices_rank = indices_shape->GetDimCount();
+    uint32_t real_axis = axis < 0 ? axis + indices_rank : axis;
+    uint64_t outer_dim = indices_shape->GetElementsToDimensionExcludingPadding(real_axis);
+    uint64_t inner_dim = indices_shape->GetElementsFromDimensionExcludingPadding(real_axis);
+    uint64_t axis_dim = depth;
+    uint64_t stride = axis_dim * inner_dim;
 
-    // parallel optimize
-    for(uint64_t i=0; i<indices_size; i++){
-        dst_ptr[i] = on_value;
-        dst_ptr += depth;
+    PRAGMA_OMP_PARALLEL_FOR()
+    for (uint64_t i = 0; i < outer_dim; i++) {
+        eT *dst_base = dst + i * axis_dim * inner_dim; 
+        std::fill(dst_base, dst_base + stride, off_value);
+        for (uint64_t k = 0; k < inner_dim; ++k) {
+            int64_t idx = indices[i * inner_dim + k];
+            idx = idx < 0 ? idx + depth : idx;
+            if(idx < 0 || idx >= depth){
+                return ppl::common::RC_INVALID_VALUE;
+            }
+            eT *p_dst = dst_base + k;
+            p_dst[idx * inner_dim] = on_value;
+        }
     }
-
-    // axis = 1
-    // transpose dst = [2,4,3]
-    // TODO: compute dst_shape_tmp[2,3,4], dst_shape[2,4,3]
-    // perm = [0,1,...,r-1], swap(r-1, axis)
-    const ppl::nn::TensorShape *dst_shape_tmp = indices_shape;
-    const ppl::nn::TensorShape *dst_shape = indices_shape;
-    // int32_t* perm;
-    std::vector<int32_t> perm;
-    return transpose_ndarray<eT>(dst_shape_tmp, dst_shape, perm.data(), dst, dst);
-    // return ppl::common::RC_UNSUPPORTED; 
+    return ppl::common::RC_SUCCESS;
 }
 
 }}}; // namespace ppl::kernel::x86
 
-#endif // !__ST_PPL_KERNEL_X86_COMMON_TILE_TILE_COMMON_H_
+#endif // !__ST_PPL_KERNEL_X86_COMMON_ONE_HOT_ONE_HOT_COMMON_H_

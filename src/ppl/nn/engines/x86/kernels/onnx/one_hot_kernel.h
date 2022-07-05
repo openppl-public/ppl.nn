@@ -15,8 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-#ifndef _ST_HPC_PPL_NN_ENGINES_X86_KERNELS_ONNX_LEAKY_RELU_KERNEL_H_
-#define _ST_HPC_PPL_NN_ENGINES_X86_KERNELS_ONNX_LEAKY_RELU_KERNEL_H_
+#ifndef _ST_HPC_PPL_NN_ENGINES_X86_KERNELS_ONNX_ONE_HOT_KERNEL_H_
+#define _ST_HPC_PPL_NN_ENGINES_X86_KERNELS_ONNX_ONE_HOT_KERNEL_H_
 
 #include "ppl/nn/engines/x86/kernel.h"
 #include "ppl/nn/params/onnx/one_hot_param.h"
