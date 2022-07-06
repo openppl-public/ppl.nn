@@ -22,6 +22,7 @@
 #include "ppl/kernel/x86/common/internal_include.h"
 // #include "ppl/kernel/x86/common/transpose/transpose_common.h"
 #include <algorithm>
+#include <iostream>
 namespace ppl { namespace kernel { namespace x86 {
 
 
@@ -35,6 +36,7 @@ static ppl::common::RetCode one_hot_ndarray_common(
     const int64_t depth,
     const int32_t axis)
 {
+    std::cout<<"value check=======> "<<on_value<<" "<<off_value<<" "<<depth<<" "<<axis<<std::endl;
     uint32_t indices_rank = indices_shape->GetDimCount();
     uint32_t real_axis = axis < 0 ? axis + indices_rank + 1 : axis;
     uint64_t outer_dim = indices_shape->GetElementsToDimensionExcludingPadding(real_axis);
@@ -54,6 +56,7 @@ static ppl::common::RetCode one_hot_ndarray_common(
             // }
             eT *p_dst = dst_base + k;
             p_dst[idx * inner_dim] = on_value;
+            std::cout<<p_dst[idx * inner_dim] <<std::endl;
         }
     }
     return ppl::common::RC_SUCCESS;

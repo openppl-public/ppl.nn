@@ -194,6 +194,8 @@ void RegisterBuiltinOpImpls() {
     RegisterOptKernelCreator<NonMaxSupressionOp>("", "NonMaxSuppression", 10, 16);
     RegisterOptKernelCreator<NonZeroOp>("", "NonZero", 9, 12);
     RegisterOptKernelCreator<NotOp>("", "Not", 1, 16);
+    // O
+    RegisterOptKernelCreator<OneHotOp>("", "OneHot", 9, 11);
     // P
     RegisterOptKernelCreator<PadOp>("", "Pad", 2, 16);
     RegisterOptKernelCreator<PowOp>("", "Pow", 7, 16);

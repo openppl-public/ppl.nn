@@ -15,8 +15,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-#ifndef _ST_HPC_PPL_NN_ENGINES_X86_OPTIMIZER_OPS_ONNX_LEAKY_RELU_OP_H_
-#define _ST_HPC_PPL_NN_ENGINES_X86_OPTIMIZER_OPS_ONNX_LEAKY_RELU_OP_H_
+#ifndef _ST_HPC_PPL_NN_ENGINES_X86_OPTIMIZER_OPS_ONNX_ONE_HOT_OP_H_
+#define _ST_HPC_PPL_NN_ENGINES_X86_OPTIMIZER_OPS_ONNX_ONE_HOT_OP_H_
 
 #include "ppl/nn/params/onnx/one_hot_param.h"
 #include "ppl/nn/engines/x86/optimizer/opt_kernel.h"

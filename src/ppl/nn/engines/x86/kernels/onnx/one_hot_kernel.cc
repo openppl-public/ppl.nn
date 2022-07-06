@@ -36,10 +36,10 @@ ppl::common::RetCode OneHotKernel::DoExecute(KernelExecContext* ctx) {
 
     PPLNN_X86_DEBUG_TRACE("axis: %d\n", param_->axis);
     PPLNN_X86_DEBUG_TRACE("isa: %u\n", GetISA());
-
+    PPLNN_X86_REALLOC_TENSOR_BUFFER(y);
     PPLNN_X86_DEBUG_TRACE("Output [y]:\n");
     PPL_X86_TENSOR_PRINT_DEBUG_MSG(y);
-
+    
     // const auto* dst_shape = y->GetShape();
     const auto* indices_shape = indices_tensor->GetShape();
     const auto data_type = ctx->GetInput<TensorImpl>(2)->GetShape()->GetDataType(); // decide on values_tensor type
