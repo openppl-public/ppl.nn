@@ -75,7 +75,7 @@ bool OneHotKernel::CanDoExecute(const KernelExecContext& ctx) const {
         LOG(ERROR) << "value tensor should be [off_value, on_value] ";
         return false;
     }
-    if(!depth_tensor->GetShape()->IsScalar()) return false; // depth is a scalar
+    // if(!depth_tensor->GetShape()->IsScalar()) return false; // depth is a scalar
     int32_t indices_rank = indices_tensor->GetShape()->GetDimCount();
     int32_t axis = param_->axis;
     axis = axis < 0 ? axis + indices_rank + 1 : axis;

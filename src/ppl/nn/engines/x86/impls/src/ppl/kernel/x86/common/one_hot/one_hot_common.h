@@ -18,13 +18,9 @@
 #ifndef __ST_PPL_KERNEL_X86_COMMON_ONE_HOT_ONE_HOT_COMMON_H_
 #define __ST_PPL_KERNEL_X86_COMMON_ONE_HOT_ONE_HOT_COMMON_H_
 
-#include <string.h> // for memcpy
 #include "ppl/kernel/x86/common/internal_include.h"
-// #include "ppl/kernel/x86/common/transpose/transpose_common.h"
 #include <algorithm>
-#include <iostream>
 namespace ppl { namespace kernel { namespace x86 {
-
 
 template <typename eT>
 static ppl::common::RetCode one_hot_ndarray_common(
@@ -36,29 +32,30 @@ static ppl::common::RetCode one_hot_ndarray_common(
     const int64_t depth,
     const int32_t axis)
 {
-    std::cout<<"value check=======> "<<on_value<<" "<<off_value<<" "<<depth<<" "<<axis<<std::endl;
     uint32_t indices_rank = indices_shape->GetDimCount();
     uint32_t real_axis = axis < 0 ? axis + indices_rank + 1 : axis;
     uint64_t outer_dim = indices_shape->GetElementsToDimensionExcludingPadding(real_axis);
     uint64_t inner_dim = indices_shape->GetElementsFromDimensionExcludingPadding(real_axis);
     uint64_t axis_dim = depth;
     uint64_t stride = axis_dim * inner_dim;
-
+    bool index_valid = true;
     PRAGMA_OMP_PARALLEL_FOR()
     for (uint64_t i = 0; i < outer_dim; i++) {
+        if(!index_valid) continue;
         eT *dst_base = dst + i * axis_dim * inner_dim; 
         std::fill(dst_base, dst_base + stride, off_value);
         for (uint64_t k = 0; k < inner_dim; ++k) {
             int64_t idx = indices[i * inner_dim + k];
-            // idx = idx < 0 ? idx + depth : idx;
-            // if(idx < 0 || idx >= depth){
-            //     return ppl::common::RC_INVALID_VALUE;
-            // }
+            idx = idx < 0 ? idx + depth : idx;
+            if(idx < 0 || idx >= depth){
+                index_valid = false;
+                continue;
+            }
             eT *p_dst = dst_base + k;
             p_dst[idx * inner_dim] = on_value;
-            std::cout<<p_dst[idx * inner_dim] <<std::endl;
         }
     }
+    if(!index_valid) return ppl::common::RC_INVALID_VALUE;
     return ppl::common::RC_SUCCESS;
 }
 
