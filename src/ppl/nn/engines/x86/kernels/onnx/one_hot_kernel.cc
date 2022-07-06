@@ -23,7 +23,7 @@ namespace ppl { namespace nn { namespace x86 {
 ppl::common::RetCode OneHotKernel::DoExecute(KernelExecContext* ctx) {
     PPLNN_X86_REQUIRED_INPUT(indices_tensor, 0);
     PPLNN_X86_REQUIRED_INPUT(depth_tensor, 1);
-    PPLNN_X86_REQUIRED_INPUT(value_tensor, 2);
+    PPLNN_X86_REQUIRED_INPUT(values_tensor, 2);
     PPLNN_X86_REQUIRED_OUTPUT(y, 0);
 
     PPLNN_X86_DEBUG_TRACE("Op: %s\n", GetName().c_str());
@@ -31,8 +31,8 @@ ppl::common::RetCode OneHotKernel::DoExecute(KernelExecContext* ctx) {
     PPL_X86_TENSOR_PRINT_DEBUG_MSG(indices_tensor);
     PPLNN_X86_DEBUG_TRACE("Input [depth]:\n");
     PPL_X86_TENSOR_PRINT_DEBUG_MSG(depth_tensor);
-    PPLNN_X86_DEBUG_TRACE("Input [value]:\n");
-    PPL_X86_TENSOR_PRINT_DEBUG_MSG(value_tensor);
+    PPLNN_X86_DEBUG_TRACE("Input [values]:\n");
+    PPL_X86_TENSOR_PRINT_DEBUG_MSG(values_tensor);
 
     PPLNN_X86_DEBUG_TRACE("axis: %d\n", param_->axis);
     PPLNN_X86_DEBUG_TRACE("isa: %u\n", GetISA());
@@ -40,20 +40,20 @@ ppl::common::RetCode OneHotKernel::DoExecute(KernelExecContext* ctx) {
     PPLNN_X86_DEBUG_TRACE("Output [y]:\n");
     PPL_X86_TENSOR_PRINT_DEBUG_MSG(y);
 
-    const auto* dst_shape = y->GetShape();
+    // const auto* dst_shape = y->GetShape();
     const auto* indices_shape = indices_tensor->GetShape();
-    const auto data_type = ctx->GetInput<TensorImpl>(1)->GetShape()->GetDataType(); // decide on value_tensor type
-    const auto data_format = ctx->GetInput<TensorImpl>(0)->GetShape()->GetDataFormat();
+    const auto data_type = ctx->GetInput<TensorImpl>(2)->GetShape()->GetDataType(); // decide on values_tensor type
+    const auto data_format = ctx->GetInput<TensorImpl>(0)->GetShape()->GetDataFormat(); // only support ndarray
     const auto depth = depth_tensor->GetBufferPtr<int64_t>()[0]; // depth_tensor is a scalar.
 
-    if (data_format == ppl::common::DATAFORMAT_NDARRAY) {
-        if (data_type == ppl::common::DATATYPE_INT64) {
-            const auto* value = value_tensor->GetBufferPtr<int64_t>();
+    if (data_format == ppl::common::DATAFORMAT_NDARRAY) { 
+        if (data_type == ppl::common::DATATYPE_INT64) { 
+            const auto* value = values_tensor->GetBufferPtr<int64_t>();
             return ppl::kernel::x86::one_hot_ndarray_int64(indices_tensor->GetBufferPtr<const int64_t>(), indices_shape, 
                                                        y->GetBufferPtr<int64_t>(), value[1],value[0], depth, param_->axis);
         } 
         else if (data_type == ppl::common::DATATYPE_FLOAT32) {
-            const auto* value = value_tensor->GetBufferPtr<float>();
+            const auto* value = values_tensor->GetBufferPtr<float>();
             return ppl::kernel::x86::one_hot_ndarray_fp32(indices_tensor->GetBufferPtr<const int64_t>(), indices_shape, 
                                                        y->GetBufferPtr<float>(), value[1],value[0], depth, param_->axis);
         }
@@ -68,32 +68,22 @@ ppl::common::RetCode OneHotKernel::DoExecute(KernelExecContext* ctx) {
 bool OneHotKernel::CanDoExecute(const KernelExecContext& ctx) const {
     auto indices_tensor = ctx.GetInput<TensorImpl>(0);
     auto depth_tensor = ctx.GetInput<TensorImpl>(1);
-    auto value_tensor = ctx.GetInput<TensorImpl>(2);
-    if(!indices_tensor || !value_tensor || !depth_tensor) return false;
+    auto values_tensor = ctx.GetInput<TensorImpl>(2);
+    if(!indices_tensor || !values_tensor || !depth_tensor) return false;
     // value = [off_value, on_value]
-    if(value_tensor->GetShape()->GetElementsExcludingPadding() != 2){
+    if(values_tensor->GetShape()->GetElementsExcludingPadding() != 2){
         LOG(ERROR) << "value tensor should be [off_value, on_value] ";
         return false;
     }
-    uint32_t indices_rank = indices_tensor->GetShape()->GetDimCount();
+    if(!depth_tensor->GetShape()->IsScalar()) return false; // depth is a scalar
+    int32_t indices_rank = indices_tensor->GetShape()->GetDimCount();
     int32_t axis = param_->axis;
-    axis = axis < 0 ? axis + indices_rank : axis;
-    if(axis < 0 || axis >= indices_rank){
-        LOG(ERROR) << "axis param should be in range of [-rank(indices), rank(indices)-1],  \
+    axis = axis < 0 ? axis + indices_rank + 1 : axis;
+    if(axis < 0 || axis > indices_rank){
+        LOG(ERROR) << "axis param should be in range of [-rank(indices)-1, rank(indices)],  \
                       which is [" << -indices_rank<<", "<<indices_rank-1<<"], but "<<param_->axis<<" was found.";
         return false;
     } 
-    // indices in [-depth, depth-1]
-    // auto indices_ptr = indices_tensor->GetBufferPtr<int64_t>();
-    // auto depth = depth_tensor->GetBufferPtr<int64_t>()[0];
-    // uint64_t indices_size = indices_tensor->GetShape()->GetElementsExcludingPadding();
-    // for(uint64_t i=0; i<indices_size; i++){
-    //     if(indices_ptr[i] < -depth || indices_ptr[i] > depth-1){
-    //         return false;
-    //     }
-    //     indices_ptr[i] = indices_ptr[i] >= 0 ? 
-    //                     indices_ptr[i] : indices_ptr[i] + depth;
-    // }
     return true;
 }
 

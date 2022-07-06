@@ -27,23 +27,17 @@ RetCode ReshapeOneHot(InputOutputInfo* info, const ir::Attr* arg) {
     const TensorShape& in_shape0 = *info->GetInput<TensorImpl>(0)->GetShape(); //indices
     const auto* depth_ptr = info->GetInput<TensorImpl>(1)->GetBufferPtr<const int64_t>(); //depth
     const int64_t depth = depth_ptr[0];
-    uint32_t fixed_axis = // [-r, r-1]
-        param->axis >= 0 ? param->axis : param->axis + info->GetInput<TensorImpl>(0)->GetShape()->GetDimCount();
-    
-    std::vector<int64_t> output_dim(in_shape0.GetDimCount() + 1); // add one dimension in axis
-    // [3,4,2,5] axis = 2 depth = 10
-    // [3,4,10,2,5]
-
-    for (uint32_t i = 0; i < fixed_axis; ++i) {
-        output_dim[i] = in_shape0.GetDim(i);
+    uint32_t real_axis = // [-r-1, r]
+        param->axis >= 0 ? param->axis : param->axis + in_shape0.GetDimCount() + 1;
+    std::vector<int64_t> output_dim; // add one dimension in axis
+    for (uint32_t i = 0; i < real_axis; ++i) {
+        output_dim.push_back(in_shape0.GetDim(i));
     }
-    output_dim[fixed_axis] = depth;
-    for (uint32_t i = fixed_axis+1; i < output_dim.size(); ++i) {
-        output_dim[i] = in_shape0.GetDim(i-1);
+    output_dim.push_back(depth);
+    for (uint32_t i = real_axis; i < in_shape0.GetDimCount(); ++i) {
+        output_dim.push_back(in_shape0.GetDim(i));
     }
-
     info->GetOutput<TensorImpl>(0)->GetShape()->Reshape(output_dim);
-
     return RC_SUCCESS;
 }
 

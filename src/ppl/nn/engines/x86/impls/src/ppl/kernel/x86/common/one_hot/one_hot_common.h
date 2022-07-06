@@ -36,7 +36,7 @@ static ppl::common::RetCode one_hot_ndarray_common(
     const int32_t axis)
 {
     uint32_t indices_rank = indices_shape->GetDimCount();
-    uint32_t real_axis = axis < 0 ? axis + indices_rank : axis;
+    uint32_t real_axis = axis < 0 ? axis + indices_rank + 1 : axis;
     uint64_t outer_dim = indices_shape->GetElementsToDimensionExcludingPadding(real_axis);
     uint64_t inner_dim = indices_shape->GetElementsFromDimensionExcludingPadding(real_axis);
     uint64_t axis_dim = depth;
