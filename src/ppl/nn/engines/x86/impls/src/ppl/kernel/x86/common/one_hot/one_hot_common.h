@@ -48,10 +48,10 @@ static ppl::common::RetCode one_hot_ndarray_common(
         std::fill(dst_base, dst_base + stride, off_value);
         for (uint64_t k = 0; k < inner_dim; ++k) {
             int64_t idx = indices[i * inner_dim + k];
-            idx = idx < 0 ? idx + depth : idx;
-            if(idx < 0 || idx >= depth){
-                return ppl::common::RC_INVALID_VALUE;
-            }
+            // idx = idx < 0 ? idx + depth : idx;
+            // if(idx < 0 || idx >= depth){
+            //     return ppl::common::RC_INVALID_VALUE;
+            // }
             eT *p_dst = dst_base + k;
             p_dst[idx * inner_dim] = on_value;
         }
