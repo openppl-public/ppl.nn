@@ -16,22 +16,21 @@
 // under the License.
 
 #include "ppl/kernel/x86/common/one_hot/one_hot_common.h"
-
 namespace ppl { namespace kernel { namespace x86 {
 
-
 ppl::common::RetCode one_hot_ndarray_fp32(
-    const int64_t *indices,
+    const void *indices,
     const ppl::nn::TensorShape *indices_shape,
+    const void *depth,
+    const ppl::nn::TensorShape *depth_shape,
+    const float *values,
     float *dst,
-    const float on_value,
-    const float off_value,
-    const int64_t depth,
     const int32_t axis
     )
 {
-    return one_hot_ndarray_common<float>(indices, indices_shape, dst, on_value,
-                            off_value, depth, axis);
+    return one_hot_ndarray_common<float>( indices,indices_shape,
+                                            depth, depth_shape,
+                                            values, dst, axis);
 }
 
 

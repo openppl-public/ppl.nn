@@ -40,22 +40,22 @@ ppl::common::RetCode OneHotKernel::DoExecute(KernelExecContext* ctx) {
     PPLNN_X86_DEBUG_TRACE("Output [y]:\n");
     PPL_X86_TENSOR_PRINT_DEBUG_MSG(y);
     
-    // const auto* dst_shape = y->GetShape();
     const auto* indices_shape = indices_tensor->GetShape();
+    const auto* depth_shape = depth_tensor->GetShape();
     const auto data_type = ctx->GetInput<TensorImpl>(2)->GetShape()->GetDataType(); // decide on values_tensor type
     const auto data_format = ctx->GetInput<TensorImpl>(0)->GetShape()->GetDataFormat(); // only support ndarray
-    const auto depth = depth_tensor->GetBufferPtr<int64_t>()[0]; // depth_tensor is a scalar.
-
     if (data_format == ppl::common::DATAFORMAT_NDARRAY) { 
         if (data_type == ppl::common::DATATYPE_INT64) { 
-            const auto* value = values_tensor->GetBufferPtr<int64_t>();
-            return ppl::kernel::x86::one_hot_ndarray_int64(indices_tensor->GetBufferPtr<const int64_t>(), indices_shape, 
-                                                       y->GetBufferPtr<int64_t>(), value[1],value[0], depth, param_->axis);
+            return ppl::kernel::x86::one_hot_ndarray_int64(indices_tensor->GetBufferPtr(), indices_shape, 
+                                                           depth_tensor->GetBufferPtr(), depth_shape,
+                                                           values_tensor->GetBufferPtr<int64_t>(),
+                                                           y->GetBufferPtr<int64_t>(), param_->axis);
         } 
         else if (data_type == ppl::common::DATATYPE_FLOAT32) {
-            const auto* value = values_tensor->GetBufferPtr<float>();
-            return ppl::kernel::x86::one_hot_ndarray_fp32(indices_tensor->GetBufferPtr<const int64_t>(), indices_shape, 
-                                                       y->GetBufferPtr<float>(), value[1],value[0], depth, param_->axis);
+            return ppl::kernel::x86::one_hot_ndarray_fp32(indices_tensor->GetBufferPtr(), indices_shape, 
+                                                           depth_tensor->GetBufferPtr(), depth_shape,
+                                                           values_tensor->GetBufferPtr<float>(),
+                                                           y->GetBufferPtr<float>(), param_->axis);
         }
         else {
             LOG(ERROR) << "unsupported data type " << ppl::common::GetDataTypeStr(data_type) << ".";
@@ -75,7 +75,6 @@ bool OneHotKernel::CanDoExecute(const KernelExecContext& ctx) const {
         LOG(ERROR) << "value tensor should be [off_value, on_value] ";
         return false;
     }
-    // if(!depth_tensor->GetShape()->IsScalar()) return false; // depth is a scalar
     int32_t indices_rank = indices_tensor->GetShape()->GetDimCount();
     int32_t axis = param_->axis;
     axis = axis < 0 ? axis + indices_rank + 1 : axis;

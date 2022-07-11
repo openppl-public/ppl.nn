@@ -23,12 +23,12 @@
 namespace ppl { namespace kernel { namespace x86 {
 
 ppl::common::RetCode one_hot_ndarray_fp32(
-    const int64_t *indices,
+    const void *indices,
     const ppl::nn::TensorShape *indices_shape,
+    const void *depth,
+    const ppl::nn::TensorShape *depth_shape,
+    const float *values,
     float *dst,
-    const float on_value,
-    const float off_value,
-    const int64_t depth,
     const int32_t axis
     );
 

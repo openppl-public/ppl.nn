@@ -23,13 +23,14 @@
 namespace ppl { namespace kernel { namespace x86 {
 
 ppl::common::RetCode one_hot_ndarray_int64(
-    const int64_t *indices,
+    const void *indices,
     const ppl::nn::TensorShape *indices_shape,
+    const void *depth,
+    const ppl::nn::TensorShape *depth_shape,
+    const int64_t *values,
     int64_t *dst,
-    const int64_t on_value,
-    const int64_t off_value,
-    const int64_t depth,
-    const int32_t axis);
+    const int32_t axis
+    );
 
 }}}; // namespace ppl::kernel::x86
 

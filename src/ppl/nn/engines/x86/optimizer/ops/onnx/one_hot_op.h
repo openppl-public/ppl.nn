@@ -28,9 +28,6 @@ public:
     OneHotOp(const ir::Node* node) : X86OptKernel(node) {}
     ppl::common::RetCode Init(const OptKernelOptions& options) override;
     KernelImpl* CreateKernelImpl() const override;
-    ppl::common::RetCode SelectFormat(const InputOutputInfo& info,
-                                      std::vector<ppl::common::dataformat_t>* selected_input_formats,
-                                      std::vector<ppl::common::dataformat_t>* selected_output_formats) override;
 
 private:
     std::shared_ptr<ppl::nn::onnx::OneHotParam> param_;
