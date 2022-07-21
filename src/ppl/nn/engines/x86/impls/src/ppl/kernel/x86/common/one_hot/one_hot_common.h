@@ -32,6 +32,12 @@ static inline ppl::common::RetCode cast2int64_kernel(const eT *src, int64_t* &ds
     return ppl::common::RC_SUCCESS;
 }
 
+template <typename eT>
+static inline int64_t cast2int64_kernel(const eT src)
+{
+    return static_cast<int64_t>(src);
+}
+
 static inline int64_t* cast2int64(const ppl::nn::TensorShape *src_shape, const void *src, bool& has_cast)
 {
     auto src_type = src_shape->GetDataType();
@@ -94,8 +100,46 @@ static ppl::common::RetCode one_hot_ndarray_common(
     uint64_t axis_dim = depth_val;
     uint64_t stride = axis_dim * inner_dim;
     bool index_valid = true;
+    // PPL_OMP_MAX_THREADS
+    const uint64_t min_block_size = 32;
+    const uint64_t num_block = min<int64_t>(PPL_OMP_MAX_THREADS(), div_up(outer_dim, min_block_size));
+    const uint64_t block_body = outer_dim / num_block;
+    const uint64_t block_tail = outer_dim % num_block;
+
     PRAGMA_OMP_PARALLEL_FOR()
-    for (uint64_t i = 0; i < outer_dim; i++) {
+    for (uint64_t i = 0; i < num_block; i++) {
+        const int64_t block_start = i * block_body + (block_tail > i ? i : block_tail);
+        const int64_t block_size = block_body + (block_tail > i ? 1 : 0);
+        for(int j=block_start; j<block_start+block_size; j++){
+            eT *dst_base = dst + j * axis_dim * inner_dim;
+            std::fill(dst_base, dst_base + stride, values[0]);
+            for (uint64_t k = 0; k < inner_dim; ++k) {
+                int64_t idx = real_indices[j * inner_dim + k];
+                idx = idx < 0 ? idx + depth_val : idx;
+                if(idx < 0 || idx >= depth_val){
+                    index_valid = false;
+                    continue;
+                }
+                eT *p_dst = dst_base + k;
+                p_dst[idx * inner_dim] = values[1];
+            }
+        }
+    }
+    if(indices_cast)  free(real_indices);
+    if(depth_cast)  free(real_depth);
+    if(!index_valid) return ppl::common::RC_INVALID_VALUE;
+    return ppl::common::RC_SUCCESS;
+}
+
+}}}; // namespace ppl::kernel::x86
+
+#endif // !__ST_PPL_KERNEL_X86_COMMON_ONE_HOT_ONE_HOT_COMMON_H_
+
+
+
+/*
+
+for (uint64_t i = 0; i < outer_dim; i++) {
         if(!index_valid) continue;
         eT *dst_base = dst + i * axis_dim * inner_dim; 
         std::fill(dst_base, dst_base + stride, values[0]);
@@ -110,12 +154,5 @@ static ppl::common::RetCode one_hot_ndarray_common(
             p_dst[idx * inner_dim] = values[1];
         }
     }
-    if(indices_cast)  free(real_indices);
-    if(depth_cast)  free(real_depth);
-    if(!index_valid) return ppl::common::RC_INVALID_VALUE;
-    return ppl::common::RC_SUCCESS;
-}
 
-}}}; // namespace ppl::kernel::x86
-
-#endif // !__ST_PPL_KERNEL_X86_COMMON_ONE_HOT_ONE_HOT_COMMON_H_
+    */
