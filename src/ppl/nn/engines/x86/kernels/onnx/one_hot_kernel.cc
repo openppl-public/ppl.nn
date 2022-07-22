@@ -39,25 +39,21 @@ ppl::common::RetCode OneHotKernel::DoExecute(KernelExecContext* ctx) {
     PPLNN_X86_REALLOC_TENSOR_BUFFER(y);
     PPLNN_X86_DEBUG_TRACE("Output [y]:\n");
     PPL_X86_TENSOR_PRINT_DEBUG_MSG(y);
-    
+
     const auto* indices_shape = indices_tensor->GetShape();
     const auto* depth_shape = depth_tensor->GetShape();
     const auto data_type = ctx->GetInput<TensorImpl>(2)->GetShape()->GetDataType(); // decide on values_tensor type
     const auto data_format = ctx->GetInput<TensorImpl>(0)->GetShape()->GetDataFormat(); // only support ndarray
-    if (data_format == ppl::common::DATAFORMAT_NDARRAY) { 
-        if (data_type == ppl::common::DATATYPE_INT64) { 
-            return ppl::kernel::x86::one_hot_ndarray_int64(indices_tensor->GetBufferPtr(), indices_shape, 
-                                                           depth_tensor->GetBufferPtr(), depth_shape,
-                                                           values_tensor->GetBufferPtr<int64_t>(),
-                                                           y->GetBufferPtr<int64_t>(), param_->axis);
-        } 
-        else if (data_type == ppl::common::DATATYPE_FLOAT32) {
-            return ppl::kernel::x86::one_hot_ndarray_fp32(indices_tensor->GetBufferPtr(), indices_shape, 
-                                                           depth_tensor->GetBufferPtr(), depth_shape,
-                                                           values_tensor->GetBufferPtr<float>(),
-                                                           y->GetBufferPtr<float>(), param_->axis);
-        }
-        else {
+    if (data_format == ppl::common::DATAFORMAT_NDARRAY) {
+        if (data_type == ppl::common::DATATYPE_INT64) {
+            return ppl::kernel::x86::one_hot_ndarray_int64(
+                indices_shape, depth_shape, indices_tensor->GetBufferPtr(), depth_tensor->GetBufferPtr(),
+                values_tensor->GetBufferPtr<int64_t>(), param_->axis, y->GetBufferPtr<int64_t>());
+        } else if (data_type == ppl::common::DATATYPE_FLOAT32) {
+            return ppl::kernel::x86::one_hot_ndarray_fp32(
+                indices_shape, depth_shape, indices_tensor->GetBufferPtr(), depth_tensor->GetBufferPtr(),
+                values_tensor->GetBufferPtr<float>(), param_->axis, y->GetBufferPtr<float>());
+        } else {
             LOG(ERROR) << "unsupported data type " << ppl::common::GetDataTypeStr(data_type) << ".";
         }
     } else {
@@ -69,20 +65,22 @@ bool OneHotKernel::CanDoExecute(const KernelExecContext& ctx) const {
     auto indices_tensor = ctx.GetInput<TensorImpl>(0);
     auto depth_tensor = ctx.GetInput<TensorImpl>(1);
     auto values_tensor = ctx.GetInput<TensorImpl>(2);
-    if(!indices_tensor || !values_tensor || !depth_tensor) return false;
+    if (!indices_tensor || !values_tensor || !depth_tensor)
+        return false;
     // value = [off_value, on_value]
-    if(values_tensor->GetShape()->GetElementsExcludingPadding() != 2){
+    if (values_tensor->GetShape()->GetElementsExcludingPadding() != 2) {
         LOG(ERROR) << "value tensor should be [off_value, on_value] ";
         return false;
     }
     int32_t indices_rank = indices_tensor->GetShape()->GetDimCount();
     int32_t axis = param_->axis;
     axis = axis < 0 ? axis + indices_rank + 1 : axis;
-    if(axis < 0 || axis > indices_rank){
+    if (axis < 0 || axis > indices_rank) {
         LOG(ERROR) << "axis param should be in range of [-rank(indices)-1, rank(indices)],  \
-                      which is [" << -indices_rank<<", "<<indices_rank-1<<"], but "<<param_->axis<<" was found.";
+                      which is ["
+                   << -indices_rank << ", " << indices_rank - 1 << "], but " << param_->axis << " was found.";
         return false;
-    } 
+    }
     return true;
 }
 

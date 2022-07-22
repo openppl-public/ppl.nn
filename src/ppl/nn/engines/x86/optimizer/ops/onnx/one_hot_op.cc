@@ -34,10 +34,9 @@ RetCode OneHotOp::Init(const OptKernelOptions& options) {
         return onnx::ReshapeOneHot(info, param_.get());
     };
     infer_type_func_ = [](InputOutputInfo* info) -> void {
-        auto& in_shape0 = *info->GetInput<TensorImpl>(2)->GetShape(); //decide on value_tensor
+        auto& in_shape0 = *info->GetInput<TensorImpl>(2)->GetShape(); // decide on value_tensor
         info->GetOutput<TensorImpl>(0)->GetShape()->SetDataType(in_shape0.GetDataType());
-    };;
-
+    };
     return RC_SUCCESS;
 }
 

@@ -19,19 +19,15 @@
 namespace ppl { namespace kernel { namespace x86 {
 
 ppl::common::RetCode one_hot_ndarray_fp32(
-    const void *indices,
     const ppl::nn::TensorShape *indices_shape,
-    const void *depth,
     const ppl::nn::TensorShape *depth_shape,
+    const void *indices,
+    const void *depth,
     const float *values,
-    float *dst,
-    const int32_t axis
-    )
+    const int32_t axis,
+    float *dst)
 {
-    return one_hot_ndarray_common<float>( indices,indices_shape,
-                                            depth, depth_shape,
-                                            values, dst, axis);
+    return one_hot_ndarray_common<float>(indices_shape, depth_shape, indices, depth, values, axis, dst);
 }
-
 
 }}}; // namespace ppl::kernel::x86

@@ -42,7 +42,7 @@
 #include "ppl/nn/models/onnx/parsers/onnx/parse_lstm_param.h"
 #include "ppl/nn/models/onnx/parsers/onnx/parse_maxunpool_param.h"
 #include "ppl/nn/models/onnx/parsers/onnx/parse_non_max_suppression_param.h"
-#include "ppl/nn/models/onnx/parsers/onnx/parse_one_hot_param.h" // add one_hot
+#include "ppl/nn/models/onnx/parsers/onnx/parse_one_hot_param.h"
 #include "ppl/nn/models/onnx/parsers/onnx/parse_pad_param.h"
 #include "ppl/nn/models/onnx/parsers/onnx/parse_pooling_param.h"
 #include "ppl/nn/models/onnx/parsers/onnx/parse_reduce_param.h"

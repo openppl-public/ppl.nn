@@ -34,6 +34,7 @@ public:
 private:
     ppl::common::RetCode DoExecute(KernelExecContext*) override;
     bool CanDoExecute(const KernelExecContext&) const override;
+
 private:
     const ppl::nn::onnx::OneHotParam* param_ = nullptr;
 };

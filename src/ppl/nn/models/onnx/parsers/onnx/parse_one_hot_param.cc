@@ -22,8 +22,7 @@ using namespace ppl::common;
 
 namespace ppl { namespace nn { namespace onnx {
 
-RetCode ParseOneHotParam(const ::onnx::NodeProto& pb_node, const ParamParserExtraArgs& args, ir::Node*,
-                            ir::Attr* arg) {
+RetCode ParseOneHotParam(const ::onnx::NodeProto& pb_node, const ParamParserExtraArgs& args, ir::Node*, ir::Attr* arg) {
     auto param = static_cast<OneHotParam*>(arg);
     utils::GetNodeAttr(pb_node, "axis", &param->axis, -1);
     return RC_SUCCESS;
